@@ -39,6 +39,7 @@ class classname {
 }
 ```
 ## Assigning classes to nodes
+Done in environmentpath/name/manifests
 ```
 node "vm1.test.net" {
   include sysadmins
@@ -84,3 +85,40 @@ apache
    | - init.pp
 ```
 Use the ```replace => false``` argument to make puppet not replace the content in case the file exists. The permissions and owners are still changed.
+
+# Relationships
+## Order of resources
+Resource are read in the order they are written
+Puppet suppors 3 ordering options(set in puppet.conf):
+ - manifest - read in order, default
+ - title-hash - sorted by hash of name
+ - random - totally random
+Instead of relying on the order of resources, other resources should be referenced if they are needed/related.
+Resource reference/pointer:
+```res_type['title']```
+Example:
+```Package['httpd']```
+### Require
+Can be used with the ```require``` attribute. The below makes sure that the Package httpd is installed
+```
+package {'httpd':
+ ensure => installed,
+}
+service { 'httpd':
+ ensure => running,
+ require => Package['httpd']
+}
+```
+Resources with the ```require``` metaparameter will only run if the resource they are dependant on will successfuly complete first.
+### Before
+```
+package {'httpd':
+ ensure => installed,
+ before => Service['httpd'],
+}
+service { 'httpd':
+ ensure => running,
+}
+```
+This makes sure the package is installed before running the service httpd resource.
+Require is generally more readable than before.
