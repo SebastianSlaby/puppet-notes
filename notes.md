@@ -122,3 +122,57 @@ service { 'httpd':
 ```
 This makes sure the package is installed before running the service httpd resource.
 Require is generally more readable than before.
+
+### Refreshable
+Some resources take action based on an event occuring in a different resource, like a confiugration change - service restart.
+Some resources are ```refreshable```, they take action when they receive a refresh event.
+```subsribe``` and ```notify``` can be used to send an event notification.
+Example:
+```
+file { '/etc/httpd/httpd.conf':
+	ensure => file,
+	source => 'puppet:///modules/apache/httpd.conf',
+{
+
+service { 'httpd':
+	ensure => running,
+	subsribe => File['/etc/httpd/httpd.conf'],
+}
+```
+Subscribes behaves like ```require```. It will make sure the specified resource is managed before itself. When using ```subscribe```, when any change is reported by the specified resource a refresh is triggered. In the case of the ```service``` resource receiving a refresh event will restart the service.
+
+```notify``` is the opposite of ```subscribe```.
+
+```subscribe``` implies ```require``` 
+```notify``` implies ```before```
+
+Only one of the above is required.
+
+```exec``` is also refreshable. A ```refreshonly``` parameter makes a resource run only when it receives a refresh event.
+
+### Implied depenedncies
+
+The ```user``` resource type autorequres any groups specified. If there is a ```group``` resource required by ```user```, it will be run before the ```user``` resource without having to use any of the relationships.
+```file``` also autorequires the user specified in the owner attribute.
+
+### Resource chaining
+A shorter syntax for expressing relationships is supported. When referencing resource, they must be declared.
+```
+Package['httpd'] -> File ['/etc/httpd/httpd.conf']
+```
+In this case the package should be run before the file resource.
+
+Resource declaration can also be chained, this is generally avoided.
+```
+package { 'aaaa':
+	ensure => installed,
+} ->
+file {'aa/aa':
+	ensure => file.
+}
+```
+Syntax for chaining resources:
+```->``` - left before right
+```<-``` - right before left
+```~>``` - left refreshes right
+```<~``` - right refreshes left
