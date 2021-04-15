@@ -176,3 +176,5 @@ Syntax for chaining resources:
 ```<-``` - right before left
 ```~>``` - left refreshes right
 ```<~``` - right refreshes left
+
+# Variables
