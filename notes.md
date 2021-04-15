@@ -236,3 +236,53 @@ Facts are available in a hash called ```$::facts```, they are also accessible in
 To get a list of facts use the ```facter``` command. Use ```.``` after facter to access variables within.
 Puppet doesn't validate if the facts are genuine. That's why ```$::trusted``` exists, they could not have been altered and come from the node's certificate.
 
+# Conditionals
+There are 2 types of conditionals:
+ - assignment conditionals: depending on the evaluation, a value of a variable will be set
+ - flow conditionals: control which code gets executed during certain conditions.
+Both case statements and selectors can use regular expressions.
+Lower and upper case doesn't matter.
+## Selectors
+They assign data based on evaluation and don't control the flow of code
+Example:
+```
+$package_name = $::facts['os']['family'] ? {
+	'Debian' => 'apache2',
+	'Redhat' => 'httpd',
+	'Solaris' => 'CSWApache2',
+	default => 'httpd',
+}
+```
+Based on the value of the variable, the value of $package_name will be set. If nothing matches, default is used.
+
+## Case statements
+Case statemets execute a block of code depending on the evaluation
+Example:
+```
+case $::facts['os']['family'] {
+	'Redhat': {
+		include yum
+	}
+	'Debian': {
+		include apt
+	}
+	default: {
+		fail ('Unknown operating system')
+	}
+}
+```
+Based on the value of the variable, different code blocks will be executed.
+
+## if/else/elsif
+They are used to control the general flow of code. The block is executed if the evaluation is true
+Example:
+```
+if $install_package{
+	package { $packagename:
+		ensure => installed,
+	}
+}
+```
+if statements support comparing values with ```==``` and other standard operators. ````=~``` matches regular expression
+
+```unless``` is the same as ```!=```. 
