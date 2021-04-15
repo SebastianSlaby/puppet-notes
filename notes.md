@@ -178,3 +178,61 @@ Syntax for chaining resources:
 ```<~``` - right refreshes left
 
 # Variables
+Variables are prefixed with ```$``` and assigned with ```=```.
+They must begin with a lower case letter or underscore and can contain alphanumeric and underscores
+Variables in puppet can't be modified or re-declared
+They can be used as resource titles, values for parameters.
+Strings shoudl be always quoted:
+- single quotes for static content
+- double quotes for interpolated content
+When interpolating variables into a string, the variable should be in brackets.
+Example:
+```
+$prefix='README'
+$suffix='txt'
+$filename="${prefix}.${suffix}"
+```
+
+## Arrays
+Array items are declared inside square brackets
+Arrays can be user in the resource title, this creates multiple resources
+```
+$users = ['bob', 'susan', 'peter']
+user { $users:
+	ensure => present,
+}
+```
+Some resource types take arrays for their attribute. For example the groups parameter of the user resource.
+References are actually arrays.
+```
+require => Package['httpd', 'ansible']
+```
+The ```require``` parameter also can take an array as the argument
+```
+require => [ Package['httpd'], Service['httpd']]
+```
+## Hashes
+Hashes are declared using brackets ```{ }```
+Keys and values are separated by a hashrocket ```=>```
+```
+$uids={
+'bob' => '9999',
+'susan => '1231',
+'peter' => '312',
+}
+```
+To reference a value use square brackets
+```
+$uid_susan = $uids['susan']
+```
+## Scopes
+Variables exist within a scope
+If a variable is not found in the current scope, the next scope will be searched.
+Scoped are namespacde with ```::```, to reference the top scope varialbe use ```$::var```. If a variable would be in another scope use ```$::name_of_scope::var```.
+
+## Facts
+Facts are available in a hash called ```$::facts```, they are also accessible in the top level scope.
+``` $::facts['os']['family']```
+To get a list of facts use the ```facter``` command. Use ```.``` after facter to access variables within.
+Puppet doesn't validate if the facts are genuine. That's why ```$::trusted``` exists, they could not have been altered and come from the node's certificate.
+
