@@ -286,3 +286,37 @@ if $install_package{
 if statements support comparing values with ```==``` and other standard operators. ````=~``` matches regular expression
 
 ```unless``` is the same as ```!=```. 
+
+# Data types
+Data types are expressed as a plain word starting wiht an uppercase letter. Data types offer a way to assert that a variable conforms to a specific type.
+Depending on the data type, optional parameters can be supplied to narrow the validation criteria. For example, the String data type takes parameters of minimum and maximim lenght ```String[5,10]```.
+```Float``` and ```Integer``` types support parameters for minimum nad maximum values.
+```Array``` supports 3 optional parameters, the content type and the min and max length of the array. ```Any``` is acceptable for content type. ```Array[Any, 5, 15]```.
+The ```Hash``` type supports four parameters. They are the same as the ones for the Array type, but also specifies the content type for the keys. ```Hash[String,Integer,5,10]```
+The ```Regexp``` type ensures that the value given is a regular expression.
+The ```Undef``` type asserts the value is undefined or undef.
+The ```Variant``` data type asserts that a value can be one of a mixture of other types, it takes a list of data types as parameters. ```Variant[String, Integer]```
+The ```Enum``` type takes a list of strings. The value of Enum always matches one of its parameters. ```Enum['yes','no']
+```Optional``` takes a data type as a parameter and takes on a value that matches the data type of the parameter, or is undef.
+
+The ```=~``` operator is used to validate a value against a data type. The outcome is true or false. ```$hostname =~ String[4]```.
+
+Data types can be used in the evauluation of case and selector conditional statements.
+```
+$bar = %foo ?{
+	String => 'It's a string',
+	Integer => 'It's a number',
+	default => 'other data type',
+}
+```
+
+# Functions
+
+Functions are server side methods and can be written in either Ruby or Puppet DSL. They are executed server side during catalog compilation. Functions either return data to assign to a variable or perform an action with no return value (statement function).
+
+There are 2 ways of calling a function:
+- Prefixed syntax: ```function(arg, arg)```
+- Chained syntax: ```arg.function(arg,arg)```
+
+
+
