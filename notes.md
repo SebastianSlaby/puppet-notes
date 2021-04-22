@@ -319,4 +319,75 @@ There are 2 ways of calling a function:
 - Chained syntax: ```arg.function(arg,arg)```
 
 
+Example of a function call ```notice("Hello World")``` or ```"Hello World".notice. They have the same effect, although the 1st syntax is more readable.
 
+Functions can be found at three levels:
+- Global functions - ```function```
+- Environment level functions - ```environment::function```
+- Module functions - ```modeulename::function```
+
+There are 2 types of functions:
+- assignment functions - returns a value to assign to a variable
+- lambdas (code blocks) - they provide anonymous functions. Usually a function will yield an object(paramete)_ within the code block. Prefixed and chainged syntaxes are supported. Prefixed: ```function(args) |parameters| {}``` Chained: ```argument.function(arguments) |parameters| {}```
+Example:
+```
+$user = with('susan', 'susan@example.com') |$u, $e| {
+ {
+	"user_name"=>$u,
+	"email" => $e,
+ }
+}
+```
+In this example, $user will contain the hash
+```
+"user_name" => "susan",
+"email" => "susan@example.com",
+```
+One of the common use of code blocks is to iterate over hashes or arrays.
+Example:
+```
+$hosts = ['host1','host2']
+$hosts.each | $v | {
+file { [ "/var/sites/${v}", "/var/log/vhosts/${v}"  ]:
+	ensure => directory,
+	}
+}
+```
+Code block syntax supports data type validation
+```each($hosts) |String $hostname, Integer $port| {}```
+
+## Writing functions
+Functions can be written in either Ruby or the Puppet DSL. Puppet functions are usually deployed from the functions directory of the module root: ```modulepath/modulename/functions/name.pp```
+Example:
+```
+function mymodule:funcname(String $myname) >> String {
+$greeting = "Hello ${myname}, how do you do?"
+$greeting
+}
+```
+Defining resources within functions is bad practice and shouldn't be done.
+
+Functions in Ruby should be placed in ```modulepath/lib/puppet/functions```
+
+# Templates
+They are used for serving dynamic file contents
+Puppet supports two template formats:
+- EPP (Embedded Puppet), native puppet dsl templates
+- ERB (Enbedded Ruby), legacy ruby templates
+EPP templates are called using the built-in ```epp``` function.
+Templates are served from ```modulepath/module_name/templates/template.epp```
+The ```epp``` function renders a template and returns the content.
+The 1st argument is the locatoin of the template as ```modulename/file```.```file``` is relative to the templates folder directly under the module root. The 2nd argument is a hash of parameters to pass to the template.
+
+## Template syntax
+Templates are static content with embedded dynamic tags surrounded by ```<% .... %>```
+There are 3 types of tags:
+- ``` <% | ...... | %> ```parameter tag
+- ```<% .... %> ```functional tag
+- ```<%= ..... %>``` Expression substitution tag
+Example template:
+```
+<% | String $role,  String $server_name | %>
+Welcome to <%= $server_name %>
+This machine is a <%= $role %> server
+```
