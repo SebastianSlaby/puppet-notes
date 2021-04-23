@@ -373,7 +373,7 @@ Functions in Ruby should be placed in ```modulepath/lib/puppet/functions```
 They are used for serving dynamic file contents
 Puppet supports two template formats:
 - EPP (Embedded Puppet), native puppet dsl templates
-- ERB (Enbedded Ruby), legacy ruby templates
+- ERB (Embedded Ruby), legacy ruby templates
 EPP templates are called using the built-in ```epp``` function.
 Templates are served from ```modulepath/module_name/templates/template.epp```
 The ```epp``` function renders a template and returns the content.
@@ -391,3 +391,43 @@ Example template:
 Welcome to <%= $server_name %>
 This machine is a <%= $role %> server
 ```
+After running the ```epp``` function on this template, use the variable with the ```content``` attribute of the ```file``` resource.
+The ```epp``` function can also be used directly as the value of the attribute.
+
+Doing it this way will make puppet insert new lines after each line that only has a tag in it. To avoid this, terminate the tags with a hyphen. ``` <% ..... -%>```
+
+# Parameterized classes
+Puppet classes should be designed to be re-usable and sharable. Class parameters can be used to make instatiations of a class customizable.
+To parameterize a class, add a section after the class name, enclosed in (). This list contains a list of comma separated variables, that the class accepts. These parameters can have a default value ```$port = 80```. This makes specifying the port value optional, it's 80 by default. Data types can also be used to validate the type of the variable.
+The class is then declared as
+```
+class { 'apache':
+ version => '2.3.3',
+ docroot => '/sites/default',
+ port => 80,
+}
+```
+And later used within the site.pp file
+```
+node "vm1.test.net"{
+ include motd,
+ class { 'apache':
+ port => 8080,
+ docroot => '/tmp'
+ }
+}
+```
+
+#Defined resource types
+
+Similar to classes, but provide a configuration model that can be instantiated multiple times. Used when two or more resources need to be grouped together.
+Defined resources are named as ```module::name```. They should be placed in a manifest file that corresponds with their name in the manifests folder. The syntax is similar to a parameterized class, with the ```define``` keyword used instead of ```class```.
+The ```$name``` variable is special within defined resource types. It represents the name of the resource.
+They are declared in the same way as parameterized classes. The resource title is passed to the ```$name``` variable.
+```
+apache::vhost { 'test.com':
+ port => 80,
+}
+```
+
+Defined resource types can be instantiated multiple times, not like classes.
