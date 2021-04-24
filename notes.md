@@ -431,3 +431,57 @@ apache::vhost { 'test.com':
 ```
 
 Defined resource types can be instantiated multiple times, not like classes.
+ 
+# Advanced resource declarations
+## Resource grouping
+Instead of writing multiple resource declarations, the syntax can look like this. Each resource declaration ends with an ```;```
+```
+file {
+'/etc/foo':
+ ensure => file,
+ source => 'puppet:///module/foo';
+'/etc/bar':
+ ensure => file,
+ source => 'puppet:///module/bar';
+}
+```
+## Resource defaults
+When declaring lots of resources of the same type with identical attributes, the amount of code can be reduced with resource defaults. Puppet supports two types of resource defaults: reference syntax, resource declaration syntax.
+
+### Reference syntax
+```
+File (upper case) {
+ ensure => file,
+ owner => 'root',
+}
+file{
+'/tmp/foo':
+source => 'puppet:///module/foo',
+}
+```
+Ensure and owner will be file and root by default. Defaults can be overridden. Included classes are also affected when doing it this way.
+Using defaults in resource declarations restrics the scope of the default to the resource declaration block. To delcare resource defaults in a block, use the ```default``` keyword instead of the resource title at the top of the declaration block.
+```
+file{
+ default:
+  .....
+  ......
+
+'/tmp/foo':
+  source => ...;
+}
+```
+
+## Dynamic attributes
+To pass dynamic resources to a declaration, use the ```*``` character. This makes it possible to use hash instead of parameters.
+```
+$attrs ={
+'owner' => 'root',
+'group' => 'root',
+}
+
+file{ '/tmp/foo':
+ensure => file,
+* => $attrs,
+}
+```
